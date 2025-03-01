@@ -6,7 +6,8 @@ import bgImage from "../assets/bg.jpg";
 
 const History = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const user = JSON.parse(localStorage.getItem("user"));
+  console.log(user.games);
   const [gameHistory, setGameHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({
@@ -17,44 +18,8 @@ const History = () => {
 
   // Simulate fetching game history
   useEffect(() => {
-    // In a real app, you would fetch this data from your API
-    const fetchGameHistory = async () => {
-      try {
-        // Simulating API call delay
-        await new Promise((resolve) => setTimeout(resolve, 800));
-
-        // Mock data
-        const mockHistory = Array.from({ length: 15 }, (_, i) => {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-
-          const correct = Math.floor(Math.random() * 20) + 5;
-          const incorrect = Math.floor(Math.random() * 10);
-          const accuracy = Math.round((correct / (correct + incorrect)) * 100);
-          const skipped = Math.floor(Math.random() * 10);
-
-          return {
-            id: i + 1,
-            date: date.toISOString(),
-            correctGuesses: correct,
-            incorrectGuesses: incorrect,
-            skipped: skipped,
-            accuracy: accuracy,
-            region: ["Europe", "Asia", "Africa", "Americas", "Oceania"][
-              Math.floor(Math.random() * 5)
-            ],
-          };
-        });
-
-        setGameHistory(mockHistory);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching game history:", error);
-        setLoading(false);
-      }
-    };
-
-    fetchGameHistory();
+    setGameHistory(user?.games);
+    setLoading(false);
   }, []);
 
   // Sorting logic
@@ -81,11 +46,6 @@ const History = () => {
     }
     return sortableItems;
   }, [gameHistory, sortConfig]);
-
-  // Filtering logic
-  const filteredHistory = sortedHistory.filter((game) =>
-    game.region.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   // Format date
   const formatDate = (dateString) => {
@@ -122,22 +82,9 @@ const History = () => {
           {/* Search and filter */}
           <div className="p-4 bg-gray-50 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row gap-3 justify-between items-center">
-              <div className="relative w-full sm:w-64">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaSearch className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Filter by region..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
               <div className="text-sm text-gray-500 flex items-center">
                 <FaCalendarAlt className="mr-2" />
-                Showing {filteredHistory.length} games
+                Showing {sortedHistory.length} games
               </div>
             </div>
           </div>
@@ -149,7 +96,7 @@ const History = () => {
               <p className="mt-4 text-gray-500">Loading your game history...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -169,12 +116,7 @@ const History = () => {
                         <FaSort className="ml-1" />
                       </div>
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Region
-                    </th>
+
                     <th
                       scope="col"
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
@@ -218,23 +160,21 @@ const History = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredHistory.length > 0 ? (
-                    filteredHistory.map((game) => (
-                      <tr key={game.id} className="hover:bg-gray-50">
+                  {sortedHistory.length > 0 ? (
+                    sortedHistory.map((game, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {game.id}
+                          {idx + 1}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {formatDate(game.date)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {game.region}
-                        </td>
+
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
-                          {game.correctGuesses}
+                          {game.correct}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
-                          {game.incorrectGuesses}
+                          {game.incorrect}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
                           {game.skipped}
@@ -276,7 +216,7 @@ const History = () => {
           )}
 
           {/* Mobile view - cards instead of table */}
-          <div className="sm:hidden">
+          <div className="md:hidden">
             <div className="divide-y divide-gray-200">
               {loading ? (
                 <div className="p-8 text-center">
@@ -285,8 +225,8 @@ const History = () => {
                     Loading your game history...
                   </p>
                 </div>
-              ) : filteredHistory.length > 0 ? (
-                filteredHistory.map((game) => (
+              ) : sortedHistory.length > 0 ? (
+                sortedHistory.map((game) => (
                   <div key={game.id} className="p-4">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm font-medium text-gray-900">
@@ -295,9 +235,6 @@ const History = () => {
                       <span className="text-sm text-gray-500">
                         {formatDate(game.date)}
                       </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mb-1">
-                      Region: {game.region}
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div className="bg-green-50 p-2 rounded text-center">

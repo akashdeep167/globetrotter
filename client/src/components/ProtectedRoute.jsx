@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import Header from "./Header";
 
 const ProtectedRoute = ({ element: Component, ...rest }) => {
-  const token = localStorage.getItem("jwtToken");
+  const token = localStorage.getItem("user");
   return token ? (
     <>
       <Header />

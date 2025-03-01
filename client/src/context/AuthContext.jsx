@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // Corrected import
 import LoadingSpinner from "../components/LoadingSpinner";
+import { loginUser } from "../api/api";
 
 const AuthContext = createContext();
 
@@ -10,13 +11,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
-    // console.log("Token from localStorage:", token);
-    if (token) {
+    const user = localStorage.getItem("user");
+    if (user) {
       try {
-        const decodedUser = jwtDecode(token);
-        // console.log("Decoded user:", decodedUser);
-        setUser(decodedUser);
+        setUser(JSON.parse(user));
         setIsLoggedIn(true);
       } catch (error) {
         console.error("Invalid token:", error);
@@ -27,9 +25,20 @@ export const AuthProvider = ({ children }) => {
     setLoading(false); // Set loading to false after checking token
   }, []);
 
-  const login = (user) => {
-    setIsLoggedIn(true);
-    setUser(user);
+  const login = async (user, token) => {
+    try {
+      const res = await loginUser(user);
+      if (res.status === 200) {
+        console.log(res.data);
+        localStorage.setItem("jwtToken", token);
+        localStorage.setItem("user", JSON.stringify(res.data));
+        setIsLoggedIn(true);
+        setUser(res.data);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      alert("Login Failed");
+    }
   };
 
   const logout = () => {

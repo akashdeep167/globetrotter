@@ -20,9 +20,7 @@ const Login = () => {
   const handleGoogleSuccess = (response) => {
     const token = response.credential;
     const user = jwtDecode(token);
-    localStorage.setItem("jwtToken", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    login(user); // Pass the user to the login function
+    login(user, token); // Pass the user to the login function
     setLoading(true);
     setTimeout(() => {
       setLoading(false);

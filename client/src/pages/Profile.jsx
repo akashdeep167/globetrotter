@@ -14,8 +14,9 @@ const Profile = () => {
   const { user } = useAuth();
 
   // Sample stats - in a real app, these would come from your backend
+  const matches = JSON.parse(localStorage.getItem("user")).games;
   const stats = {
-    gamesPlayed: 42,
+    gamesPlayed: matches.length,
     countriesVisited: 78,
     bestScore: 95,
     memberSince: new Date(user?.created_at || Date.now()).toLocaleDateString(),

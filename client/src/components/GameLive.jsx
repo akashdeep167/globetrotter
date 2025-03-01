@@ -8,6 +8,8 @@ import { GrSend } from "react-icons/gr";
 import Button from "./Button";
 import { IoIosRefresh } from "react-icons/io";
 import ProgressBar from "./ProgressBar";
+import { addGame, checkAnswer, getDestination } from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 const Card = ({ children, className, ...props }) => (
   <div className={`rounded-lg ${className}`} {...props}>
@@ -39,35 +41,11 @@ const ScoreCard = ({ children, className, ...props }) => (
   </div>
 );
 
-const placeApi = {
-  city: "Paris",
-  country: "France",
-  clues: [
-    "This city is home to a famous tower that sparkles every night.",
-    "Known as the 'City of Love' and a hub for fashion and art.",
-  ],
-  fun_fact: [
-    "The Eiffel Tower was supposed to be dismantled after 20 years but was saved because it was useful for radio transmissions!",
-    "Paris has only one stop sign in the entire city—most intersections rely on priority-to-the-right rules.",
-  ],
-  trivia: [
-    "This city is famous for its croissants and macarons. Bon appétit!",
-    "Paris was originally a Roman city called Lutetia.",
-  ],
-  options: ["Paris", "Tokyo", "New York", "London"],
-};
-
-const getRandomDestination = () => {
-  return placeApi;
-};
-
 function GameLive() {
   const { gameSettings } = useGameSettings();
-  console.log(gameSettings);
-  const [destination, setDestination] = useState(getRandomDestination());
-  const [clue, setClue] = useState(
-    destination.clues[Math.floor(Math.random() * destination.clues.length)]
-  );
+  const { user } = useAuth();
+  const [destination, setDestination] = useState(null);
+  const [clue, setClue] = useState("");
   const [score, setScore] = useState({ correct: 0, incorrect: 0, skipped: 0 });
   const [feedback, setFeedback] = useState("");
   const [isCorrect, setIsCorrect] = useState(null);
@@ -76,7 +54,28 @@ function GameLive() {
 
   const progress = (remainingRounds / gameSettings.rounds) * 100;
 
-  const nextDestination = useCallback(() => {
+  useEffect(() => {
+    const fetchDestination = async () => {
+      try {
+        const newDestination = await getDestination();
+        if (!newDestination || !newDestination.clues) {
+          console.error("Invalid destination data:", newDestination);
+          return;
+        }
+        setDestination(newDestination);
+        setClue(
+          newDestination.clues[
+            Math.floor(Math.random() * newDestination.clues.length)
+          ]
+        );
+      } catch (error) {
+        console.error("Error fetching destination:", error);
+      }
+    };
+    fetchDestination();
+  }, []);
+
+  const nextDestination = useCallback(async () => {
     if (!answered) {
       setScore((prevScore) => ({
         ...prevScore,
@@ -86,7 +85,7 @@ function GameLive() {
     setAnswered(false);
     setIsCorrect(null);
 
-    const newDestination = getRandomDestination();
+    const newDestination = await getDestination();
     setDestination(newDestination);
     setClue(
       newDestination.clues[
@@ -96,10 +95,15 @@ function GameLive() {
     setFeedback("");
   }, [answered]);
 
-  const getRandomClue = () => {
-    setClue(
-      destination.clues[Math.floor(Math.random() * destination.clues.length)]
-    );
+  const getNextClue = () => {
+    const len = destination.clues.length;
+    let idx = destination.clues.findIndex((c) => c === clue);
+    if (idx === len - 1) {
+      idx = 0;
+    } else {
+      idx++;
+    }
+    setClue(destination.clues[idx]);
   };
   useEffect(() => {
     const handleBeforeUnload = (event) => {
@@ -115,11 +119,11 @@ function GameLive() {
     };
   }, []);
 
-  const handleAnswer = (answer) => {
+  const handleAnswer = async (answer) => {
     if (answered) return;
     setAnswered(true);
-
-    if (answer === destination.city) {
+    const res = await checkAnswer(destination._id, answer);
+    if (res.isCorrect) {
       //check-answer
       setScore((prevScore) => ({
         ...prevScore,
@@ -134,8 +138,9 @@ function GameLive() {
 
       confetti({
         particleCount: 100,
-        spread: 70,
+        spread: 100,
         origin: { y: 0.6 },
+        gravity: 10,
       });
     } else {
       setScore((prevScore) => ({
@@ -155,8 +160,28 @@ function GameLive() {
   const accuracy =
     totalQuestions > 0 ? Math.round((score.correct / totalQuestions) * 100) : 0;
 
-  if (remainingRounds > gameSettings?.rounds) {
-    //we have to save the match
+  useEffect(() => {
+    if (remainingRounds > gameSettings?.rounds) {
+      const game = {
+        correct: score.correct,
+        incorrect: score.incorrect,
+        skipped: score.skipped,
+        accuracy: accuracy,
+        date: new Date().toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        }),
+      };
+      const saveResults = async () => {
+        await addGame(user.sub, game);
+      };
+      saveResults();
+    }
+  }, [remainingRounds, gameSettings?.rounds, score, user.sub]);
+
+  if (!destination) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -254,7 +279,8 @@ function GameLive() {
                 </div>
                 <div
                   className="flex mt-auto cursor-pointer hover:bg-gray-400 p-2 ml-2 rounded-full"
-                  onClick={() => getRandomClue()}
+                  onClick={() => getNextClue()}
+                  title="Need another clue?"
                 >
                   <IoIosRefresh />
                 </div>
