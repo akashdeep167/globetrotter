@@ -82,8 +82,6 @@ function GameLive() {
         skipped: prevScore.skipped + 1,
       }));
     }
-    setAnswered(false);
-    setIsCorrect(null);
 
     const newDestination = await getDestination();
     setDestination(newDestination);
@@ -93,6 +91,8 @@ function GameLive() {
       ]
     );
     setFeedback("");
+    setAnswered(false);
+    setIsCorrect(null);
   }, [answered]);
 
   const getNextClue = () => {
