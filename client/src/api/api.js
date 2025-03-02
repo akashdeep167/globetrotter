@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const url = "http://localhost:5000";
+const url = process.env.REACT_APP_API_URL || "http://localhost:5000";
 export const loginUser = async (user) => {
   try {
     const res = await axios.post(`${url}/api/users`, user);
