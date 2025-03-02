@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 // Enable CORS for frontend domain
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "*",
+    origin: process.env.CLIENT_URL || "https://globetrotter-wruf.onrender.com/", // Ensure this matches your frontend URL
     credentials: true,
   })
 );
