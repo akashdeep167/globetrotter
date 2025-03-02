@@ -4,6 +4,8 @@ import userRoutes from "./routes/userRoutes.js";
 import destinationRoutes from "./routes/destinationRoutes.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
@@ -15,6 +17,18 @@ app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/destinations", destinationRoutes);
+
+// Fix for __dirname in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the client/dist directory
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// Serve index.html at the root URL
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
 
 const USERNAME = process.env.DB_USERNAME;
 const PASSWORD = process.env.DB_PASSWORD;
