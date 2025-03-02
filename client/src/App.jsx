@@ -10,6 +10,8 @@ import Game from "./pages/Game";
 import Profile from "./pages/Profile";
 import History from "./pages/History";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Invite from "./pages/Invite";
+import InviteHandler from "./pages/InviteHandler";
 
 const App = () => {
   const clientId =
@@ -35,6 +37,7 @@ const App = () => {
                 path="/history"
                 element={<ProtectedRoute element={History} />}
               />
+              <Route path="/invite" element={<InviteHandler />} />
             </Routes>
           </Router>
         </GameSettingsProvider>

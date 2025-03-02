@@ -60,3 +60,44 @@ export const addGame = async (sub, game) => {
     return { success: false, message: "Error adding game" };
   }
 };
+
+export const referFriend = async (friendName) => {
+  try {
+    const friendData = {
+      name: friendName,
+      email: `${friendName}@example.com`, // Dummy email for the friend
+      given_name: friendName,
+      family_name: friendName,
+      picture: "https://randomuser.me/api/portraits/lego/1.jpg", // Random image URL
+    };
+    const res = await axios.post(`${url}/api/users/friend`, friendData); // Corrected endpoint
+    return res.data;
+  } catch (error) {
+    console.error("Error referring friend", error.message);
+    return { success: false, message: "Error referring friend" };
+  }
+};
+
+export const uploadImage = async (formData) => {
+  try {
+    const response = await axios.post(`${url}/api/upload`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data.url;
+  } catch (error) {
+    console.error("Error uploading image:", error.message);
+    throw error;
+  }
+};
+
+export const checkInvitation = async (friendId) => {
+  try {
+    const response = await axios.post(`${url}/api/users/invite`, { friendId }); // Send friendId as an object
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

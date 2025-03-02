@@ -8,8 +8,9 @@ import { GrSend } from "react-icons/gr";
 import Button from "./Button";
 import { IoIosRefresh } from "react-icons/io";
 import ProgressBar from "./ProgressBar";
-import { addGame, checkAnswer, getDestination } from "../api/api";
+import { addGame, checkAnswer, getDestination, referFriend } from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import ChallengeFriend from "./ChallengeFriend";
 
 const Card = ({ children, className, ...props }) => (
   <div className={`rounded-lg ${className}`} {...props}>
@@ -51,6 +52,7 @@ function GameLive() {
   const [isCorrect, setIsCorrect] = useState(null);
   const [answered, setAnswered] = useState(false);
   const [remainingRounds, setRemainingRounds] = useState(1);
+  const [challengeFriend, setChallengeFriend] = useState(false);
 
   const progress = (remainingRounds / gameSettings.rounds) * 100;
 
@@ -180,6 +182,17 @@ function GameLive() {
     }
   }, [remainingRounds, gameSettings?.rounds, score, user.sub]);
 
+  if (challengeFriend) {
+    return (
+      <ChallengeFriend
+        user={user}
+        score={score}
+        challengeFriend={challengeFriend}
+        setChallengeFriend={setChallengeFriend}
+      />
+    );
+  }
+
   if (!destination) {
     return <div>Loading...</div>;
   }
@@ -259,10 +272,11 @@ function GameLive() {
               <VscDebugRestart />
               <span className="ml-3">Play again!</span>
             </Button>
-
             <Button
               className=" py-3 text-lg justify-center px-4 transition-all flex items-center cursor-pointer"
-              onClick={() => {}}
+              onClick={() => {
+                setChallengeFriend((prev) => !prev);
+              }}
             >
               <span className="mr-3">Challenge a Friend</span> <GrSend />
             </Button>

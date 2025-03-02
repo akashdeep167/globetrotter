@@ -6,7 +6,9 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
+// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
@@ -17,6 +19,7 @@ app.use(express.json());
 
 app.use("/api/users", userRoutes);
 app.use("/api/destinations", destinationRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Fix for __dirname in ES module scope
 const __filename = fileURLToPath(import.meta.url);
