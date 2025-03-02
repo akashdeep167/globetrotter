@@ -17,8 +17,11 @@ const Profile = () => {
   const matches = JSON.parse(localStorage.getItem("user")).games;
   const stats = {
     gamesPlayed: matches.length,
-    countriesVisited: 78,
-    bestScore: 95,
+    countriesVisited: matches.length,
+    bestScore: matches.reduce(
+      (max, match) => (match.accuracy > max ? match.accuracy : max),
+      0
+    ),
     memberSince: new Date(user?.created_at || Date.now()).toLocaleDateString(),
   };
 
@@ -101,7 +104,7 @@ const Profile = () => {
                   <div>
                     <div className="font-medium">World Explorer</div>
                     <div className="text-sm text-gray-500">
-                      Visited 50+ countries
+                      Visited {stats.gamesPlayed}+ countries
                     </div>
                   </div>
                 </div>
@@ -110,7 +113,7 @@ const Profile = () => {
                   <div>
                     <div className="font-medium">Geography Expert</div>
                     <div className="text-sm text-gray-500">
-                      90% accuracy in Europe
+                      {stats.bestScore}% accuracy in Europe
                     </div>
                   </div>
                 </div>
