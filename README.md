@@ -10,6 +10,7 @@ Globetrotter is a web application that allows users to participate in a travel d
 - Responsive design
 - Confetti animation for correct answers
 - Progress bar to track quiz progress
+- Ability to challenge friends
 
 ## Technologies Used
 
@@ -129,3 +130,33 @@ Contributions are welcome! Please open an issue or submit a pull request for any
 ## License
 
 This project is licensed under the MIT License.
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Google OAuth 2.0 Error:**
+
+   - Ensure that the JavaScript origin is registered in the Google Cloud Console.
+   - Verify that the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in the `.env` file are correct.
+
+2. **MongoDB Connection Error:**
+
+   - Ensure that the MongoDB URI is correctly formatted in the `.env` file.
+   - Verify that the MongoDB username and password are correct.
+
+3. **CORS Issues:**
+   - Ensure that the `cors` middleware is properly configured in the server.
+
+### Debugging Tips
+
+- Use `console.log` statements to debug issues in both the client and server code.
+- Check the browser's developer console for any client-side errors.
+- Check the server logs for any server-side errors.
+
+## Future Enhancements
+
+- Add more travel destinations and questions.
+- Implement a leaderboard to track top scores.
+- Add social media sharing functionality.
+- Improve the user interface and user experience.
